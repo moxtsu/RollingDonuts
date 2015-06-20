@@ -1,0 +1,3 @@
+[submodule "submodule/Fabric"]
+	path = submodule/Fabric
+	url = https://github.com/zergtmn/Fabric.git
