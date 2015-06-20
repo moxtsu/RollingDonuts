@@ -11,8 +11,16 @@ public class CameraBehaviour : MonoBehaviour {
 		IObservable<Vector3> positionObservable = Observable.EveryUpdate()
 			.Select (_ => { return trackObject.transform.position; });
 
-		positionObservable.Subscribe(pos => { 
-			Camera.main.transform.position = new Vector3(pos.x, pos.y, Camera.main.transform.position.z);
-		});
+		positionObservable
+			.Subscribe(pos => {
+				// a little bit position changed
+				if (Vector3.Distance (pos, Camera.main.transform.position) < 1.0f) {
+					Vector3 slerp = Vector3.Slerp (Camera.main.transform.position, pos, 0.1f);
+					Camera.main.transform.position = new Vector3(pos.x, slerp.y, Camera.main.transform.position.z);
+				}
+				else {
+					Camera.main.transform.position = new Vector3(pos.x, pos.y, Camera.main.transform.position.z);
+				}
+			});
 	}
 }
