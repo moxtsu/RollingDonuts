@@ -13,13 +13,18 @@ public class FloorGenerator : MonoBehaviour {
 	void Start () {
 		Renderer floorRenderer = floorObject.GetComponent<Renderer>();
 
+		GenerateFloor (1, floorRenderer.bounds);
 		trackObject.UpdateAsObservable()
-			.Select (_ => (int)((trackObject.transform.position.x + floorRenderer.bounds.size.x) / floorRenderer.bounds.size.x))
+			.Select (_ => (int)((trackObject.transform.position.x + 2*floorRenderer.bounds.size.x) / floorRenderer.bounds.size.x))
 			.DistinctUntilChanged ()
-			.Where (times => times > 0)
+			.Where (times => times > 1)
 			.Subscribe (times => {
-				Vector3 position = new Vector3(times * (floorRenderer.bounds.size.x + floorPositionOffsetX), times * (-floorRenderer.bounds.size.y + floorPositionOffsetY), 0);
-				Instantiate(floorObject, position, floorObject.transform.rotation);
+					GenerateFloor (times, floorRenderer.bounds);
 			});
+	} 
+
+	void GenerateFloor(int times, Bounds bounds) {
+		Vector3 position = new Vector3(times * (bounds.size.x + floorPositionOffsetX), times * (-bounds.size.y + floorPositionOffsetY), 0);
+		Instantiate(floorObject, position, floorObject.transform.rotation);
 	}
 }
