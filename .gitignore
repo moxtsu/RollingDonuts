@@ -22,3 +22,5 @@ sysinfo.txt
 
 Exports/
 !Exports/.gitkeep
+
+.DS_Store
