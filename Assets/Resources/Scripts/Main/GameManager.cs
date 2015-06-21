@@ -13,7 +13,7 @@ public enum GameScene {
 }
 
 public class GameManager : SingletonMonoBehaviourFast<GameManager> {
-	private GameScene scene = GameScene.Start;
+	public GameScene scene = GameScene.Start;
 	
 	public void GameStart(GameObject gameObject, float timeLimit, Slider slider) {
 		scene = GameScene.Playing;

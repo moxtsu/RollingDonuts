@@ -12,7 +12,8 @@ public class CharacterController : MonoBehaviour {
 		IObservable<bool> characterMoveObservable = this.UpdateAsObservable()
 			.Where(_ => Input.GetMouseButton(0))
 			.Select(_ => Input.mousePosition.x)
-			.Select(x => x/Screen.width >= 0.5f);
+			.Select(x => x/Screen.width >= 0.5f)
+			.Where(_ => GameManager.Instance.scene == GameScene.Playing);
 			
 		characterMoveObservable
 			.Subscribe(right => {
