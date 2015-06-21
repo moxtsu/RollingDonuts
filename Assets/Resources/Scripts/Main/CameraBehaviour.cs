@@ -8,7 +8,7 @@ public class CameraBehaviour : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		IObservable<Vector3> positionObservable = Observable.EveryUpdate()
+		IObservable<Vector3> positionObservable = this.gameObject.UpdateAsObservable()
 			.Select (_ => { return trackObject.transform.position; });
 
 		positionObservable
