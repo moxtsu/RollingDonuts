@@ -36,13 +36,29 @@ public class GameManager : SingletonMonoBehaviourFast<GameManager> {
 	}
 	
 	public void GameOver() {
+		if (scene != GameScene.Playing) { return; }
+		
 		scene = GameScene.Over;
-		Application.LoadLevel ("Over");
+		
+		// ちょっと間を置く
+		this.gameObject.UpdateAsObservable()
+			.Take(1).Delay(TimeSpan.FromSeconds(.5f))
+			.Subscribe(_ => {
+				Application.LoadLevel ("Over");
+			});
 	}
 	
 	public void GameClear() {
+		if (scene != GameScene.Playing) { return; }
+		
 		scene = GameScene.Clear;
-		Application.LoadLevel ("Clear");
+		
+		// ちょっと間を置く
+		this.gameObject.UpdateAsObservable()
+			.Take(1).Delay(TimeSpan.FromSeconds(.5f))
+			.Subscribe(_ => {
+				Application.LoadLevel ("Clear");
+			});
 	}
 	
 	private TimeSpan GetEpoch() {
