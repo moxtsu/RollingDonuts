@@ -3,7 +3,7 @@ using System.Collections;
 using UniRx;
 using UniRx.Triggers;
 
-public class CharactorController : MonoBehaviour {
+public class CharacterController : MonoBehaviour {
 	private float speed = 0.5f;
 
 	// Use this for initialization

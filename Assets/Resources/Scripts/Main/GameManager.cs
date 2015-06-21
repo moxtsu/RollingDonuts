@@ -5,22 +5,28 @@ using System.Collections;
 using UniRx;
 using UniRx.Triggers;
 
-public class GameManager : MonoBehaviour {
-	public float timeLimit = 10.0f;
-	public Slider slider;
+public enum GameScene {
+	Start,
+	Playing,
+	Clear,
+	Over,
+}
+
+public class GameManager : SingletonMonoBehaviourFast<GameManager> {
+	private GameScene scene = GameScene.Start;
 	
-	// Use this for initialization
-	void Start () {
+	public void GameStart(GameObject gameObject, float timeLimit, Slider slider) {
+		scene = GameScene.Playing;
 		TimeSpan startTime = GetEpoch();
 		
-		this.gameObject.UpdateAsObservable()
+		gameObject.UpdateAsObservable()
 			.Take(1)
 			.Delay(TimeSpan.FromSeconds(timeLimit))
 			.Subscribe(_ => {
-				GameClear();
+				if (scene == GameScene.Playing) { GameClear(); }
 			});
 			
-		this.gameObject.UpdateAsObservable()
+		gameObject.UpdateAsObservable()
 			.Select(_ => (GetEpoch() - startTime).TotalSeconds)
 			.Where(passedTime => passedTime < timeLimit)
 			.Select(passedTime => (float)(passedTime / timeLimit))
@@ -30,10 +36,12 @@ public class GameManager : MonoBehaviour {
 	}
 	
 	public void GameOver() {
+		scene = GameScene.Over;
 		Application.LoadLevel ("Over");
 	}
 	
 	public void GameClear() {
+		scene = GameScene.Clear;
 		Application.LoadLevel ("Clear");
 	}
 	
