@@ -4,7 +4,7 @@ using UniRx;
 using UniRx.Triggers;
 
 public class CharacterController : MonoBehaviour {
-	private float speed = 0.5f;
+	private float speed = 0.1f;
 
 	// Use this for initialization
 	void Start () {
