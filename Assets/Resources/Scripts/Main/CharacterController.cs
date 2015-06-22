@@ -16,10 +16,9 @@ public class CharacterController : MonoBehaviour {
 			.Where(_ => GameManager.Instance.scene == GameScene.Playing);
 			
 		characterMoveObservable
-			.Subscribe(right => {
-				rigidbody.velocity = (right)
-					? rigidbody.velocity + new Vector2(2.0f, -0.6f).normalized * speed
-					: rigidbody.velocity + new Vector2(2.0f, -0.6f).normalized * -speed;
+			.Select(right => right ? speed : -speed)
+			.Subscribe(speed => {
+				rigidbody.velocity = rigidbody.velocity + new Vector2(2.0f, -0.6f).normalized * speed;
 			});
 	}
 }

@@ -5,7 +5,7 @@ using UniRx;
 using UniRx.Triggers;
 
 public class GameLauncher : MonoBehaviour {
-	public float endPositionX = 10.0f; // ゲームの終了位置
+	public float endPositionX = 100.0f; // ゲームの終了位置
 	public GameObject characterObject;
 	public Slider slider;
 	

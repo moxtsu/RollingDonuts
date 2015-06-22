@@ -8,11 +8,10 @@ public class DonutsFloorBehaviour : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		float offsetY = this.gameObject.transform.position.y - donutsObject.gameObject.transform.position.y;
+		Vector3 offsetPosition = this.transform.position - donutsObject.transform.position;
+		
 		this.UpdateAsObservable()
 			.Select (_ => donutsObject.transform.position)
-			.Subscribe (pos => {
-				this.transform.position = new Vector3(pos.x, pos.y + offsetY, this.transform.position.z);
-			});
+			.Subscribe (donutsPosition => this.transform.position = donutsPosition + offsetPosition);
 	}
 }

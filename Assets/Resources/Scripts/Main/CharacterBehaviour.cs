@@ -18,51 +18,45 @@ public class CharacterBehaviour : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		Animator characterAnimator = this.GetComponent<Animator>();
-		Bounds characterBounds   = this.gameObject.GetComponent<Renderer>().bounds;
-		Bounds donutsFloorBounds = donutsFloorObject.GetComponent<Collider2D>().bounds;
+		Bounds characterBounds     = this.gameObject.GetComponent<Renderer>().bounds;
+		Bounds donutsFloorBounds   = donutsFloorObject.GetComponent<Collider2D>().bounds;
+		IObservable<Vector3> characterPositionObservable = this.gameObject.UpdateAsObservable()
+			.Select(_ => this.transform.position);
+		Vector3 characterFloorOffsetPosition = this.transform.position - donutsFloorObject.transform.position;
 		
 		// 台座より下の位置にキャラクターが移動したらコテンっていうアニメーション
-		IObservable<bool> missObservable = this.gameObject.UpdateAsObservable()
-			.Select(_ => this.transform.position.y - donutsFloorObject.transform.position.y)
+		IObservable<bool> missObservable = characterPositionObservable
+			.Select(position => position.y - donutsFloorObject.transform.position.y)
 			.Select(y => y - characterBounds.size.y/2 - donutsFloorBounds.size.y/2)
 			.Select(y => y < -0.5); // 微調整必要
 			
 		missObservable.Subscribe(miss => {
 			SetAnimatorState(characterAnimator, miss ? CharacterState.miss : CharacterState.stay);
 		});
-			
+		
 		// キャラが左右に動いてるアニメーション
 		IObservable<bool> characterMoveObservable = this.UpdateAsObservable()
 			.Where(_ => Input.GetMouseButton(0))
 			.Select(_ => Input.mousePosition.x)
 			.Select(x => x/Screen.width >= 0.5f)
 			.Where(_ => GameManager.Instance.scene == GameScene.Playing);
-			
-		characterMoveObservable.Subscribe(right => {
-			SetAnimatorState(characterAnimator, right? CharacterState.right : CharacterState.left);
-		});
 		
-		/*	
-		IObservable<CharacterState> characterStateObservable = 
-			this.gameObject.UpdateAsObservable()
-				.CombineLatest(characterMoveObservable, (left, right) => right)
-				.CombineLatest(missObservable, (move, miss) => {
-					if (miss) { return CharacterState.miss; }
-					if (Input.GetMouseButton(0)) {
-						return move ? CharacterState.right : CharacterState.left;
-					}
-					return CharacterState.stay;
-		}).Subscribe(state => {
-			
-		});
-		*/
+		characterMoveObservable
+			.Select(right => right ? CharacterState.right : CharacterState.left)
+			.Subscribe(state => SetAnimatorState(characterAnimator, state));
 		
 		// 床についたらゲームオーバー
 		this.gameObject.OnCollisionEnter2DAsObservable()
 			.Where(collision => collision.gameObject.tag == "Ground")
-			.Subscribe(_ => {
-				GameManager.Instance.GameOver();
-			});
+			.Subscribe(_ => GameManager.Instance.GameOver());
+			
+		// はじめはキャラの位置を固定
+		characterPositionObservable
+			.Where(position => position.x < 0)
+			.Select(_ => donutsFloorObject.transform.position + characterFloorOffsetPosition)
+			// ガタつくのを抑制
+			.Select(newPosition => Vector3.Slerp(this.transform.position, newPosition, 0.1f))
+			.Subscribe(newPosition => this.transform.position = newPosition);
 	}
 	
 	void SetAnimatorState(Animator animator, CharacterState state) {
