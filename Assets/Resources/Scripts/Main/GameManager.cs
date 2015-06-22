@@ -15,24 +15,23 @@ public enum GameScene {
 public class GameManager : SingletonMonoBehaviourFast<GameManager> {
 	public GameScene scene = GameScene.Start;
 	
-	public void GameStart(GameObject gameObject, float timeLimit, Slider slider) {
-		scene = GameScene.Playing;
-		TimeSpan startTime = GetEpoch();
+	private float endPositionX = 0.0f;
+	
+	private float endDelayTime = 1.0f; // Clear/Miss時の終了遅延時間
+	
+	public void GamePlay(IObservable<Vector3> characterPositionObservable, float endPositionX, Slider slider) {
+		this.scene        = GameScene.Playing;
+		this.endPositionX = endPositionX;
 		
-		gameObject.UpdateAsObservable()
-			.Take(1)
-			.Delay(TimeSpan.FromSeconds(timeLimit))
-			.Subscribe(_ => {
-				if (scene == GameScene.Playing) { GameClear(); }
-			});
-			
-		gameObject.UpdateAsObservable()
-			.Select(_ => (GetEpoch() - startTime).TotalSeconds)
-			.Where(passedTime => passedTime < timeLimit)
-			.Select(passedTime => (float)(passedTime / timeLimit))
-			.Subscribe(value => {
-				slider.normalizedValue = value;
-			});
+		characterPositionObservable
+			.Where(position => position.x > endPositionX)
+			.Where(_ => scene == GameScene.Playing)
+			.Subscribe(_ => GameClear());
+		
+		characterPositionObservable
+			.Select(position => (float)(position.x / endPositionX))
+			.Where(ratio => ratio <= 1.0f)
+			.Subscribe(ratio => slider.normalizedValue = ratio);
 	}
 	
 	public void GameOver() {
@@ -42,10 +41,9 @@ public class GameManager : SingletonMonoBehaviourFast<GameManager> {
 		
 		// ちょっと間を置く
 		this.gameObject.UpdateAsObservable()
-			.Take(1).Delay(TimeSpan.FromSeconds(.5f))
-			.Subscribe(_ => {
-				Application.LoadLevel ("Over");
-			});
+			.First()
+			.Delay(TimeSpan.FromSeconds(endDelayTime))
+			.Subscribe(_ => Application.LoadLevel ("Over"));
 	}
 	
 	public void GameClear() {
@@ -55,13 +53,23 @@ public class GameManager : SingletonMonoBehaviourFast<GameManager> {
 		
 		// ちょっと間を置く
 		this.gameObject.UpdateAsObservable()
-			.Take(1).Delay(TimeSpan.FromSeconds(.5f))
-			.Subscribe(_ => {
-				Application.LoadLevel ("Clear");
-			});
+			.First()
+			.Delay(TimeSpan.FromSeconds(endDelayTime))
+			.Subscribe(_ => Application.LoadLevel ("Clear"));
+	}
+	
+	public void GameStart() {
+		scene = GameScene.Start;
+		
+		Application.LoadLevel("Start");
+	}
+	
+	public float GetEndPositionX() {
+		return this.endPositionX;
 	}
 	
 	private TimeSpan GetEpoch() {
 		return DateTime.UtcNow - new DateTime(1970, 1, 1);
 	}
+	
 }

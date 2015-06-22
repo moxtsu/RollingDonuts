@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using UniRx;
 using UniRx.Triggers;
@@ -8,8 +9,11 @@ public class CameraBehaviour : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		//　物体のを追跡する. 開始と終了の遅延を除く
 		IObservable<Vector3> positionObservable = this.gameObject.UpdateAsObservable()
-			.Select (_ => { return trackObject.transform.position; });
+			.Select (_ => { return trackObject.transform.position; })
+			.Where(position => position.x >= 0)
+			.Where(position => position.x <= GameManager.Instance.GetEndPositionX());
 
 		positionObservable
 			.Subscribe(pos => {
